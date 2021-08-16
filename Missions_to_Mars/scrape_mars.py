@@ -17,7 +17,6 @@ def scrape():
     mars_dict = {}
 
     # News scrape
-
     time.sleep(2)
     news_url= 'https://redplanetscience.com'
     browser.visit(news_url)
@@ -29,7 +28,6 @@ def scrape():
     n_paragraph = news_soup.find_all('div', class_="article_teaser_body")[0].text
 
     # Scrape featured image
-    time.sleep(2)
     jpl_url = 'https://spaceimages-mars.com/'
     browser.visit(jpl_url)
     html= browser.html
@@ -58,37 +56,50 @@ def scrape():
     #loop through hemispheres to get title and images
 
     for i in mars_hems:
-        ##title
-        hemisphere = i.find('div', class_='description')
-        title = hemisphere.h3.text
+        try: 
+        
+            ##title
+            hemisphere = i.find('div', class_='description')
+            title = hemisphere.h3.text
     
-        ##full res img
-        hems_img = hemisphere.a['href']
-        browser.visit(hems_url + hems_img)
+            ##full res img
+            hems_img = hemisphere.a['href']
+            browser.visit(hems_url + hems_img)
+
+            img_html = browser.html
+            img_soup = bs(img_html, 'html.parser')
     
-        img_html = browser.html
-        img_soup = bs(img_html, 'html.parser')
+            img_link = img_soup.find('div', class_='downloads')
+            img_url = img_link.find('li').a['href']
     
-        img_link = img_soup.find('div', class_='downloads')
-        img_url = img_link.find('li').a['href']
-    
-        ##dictionary
-        img_dict = {
-            'Title': title, 
-            'Image': img_url
-        }
-        hems_img_urls.append(img_dict)
+            if (title and img_url):
+
+                #print results
+                print('-'*25)
+                print (title)
+                print(img_url)
+
+            # hemisphere dict
+        
+            hems_dict = {
+                'title': title, 
+                'image': img_url
+            }
+            hems_img_urls.append(hems_dict)
+        except Exception as e:
+            print(e)
 
     #Mars Dictionary
 
     mars_dict = {
-        'news_title': n_title, 
-        'news_p': n_paragraph, 
+        'n_title': n_title, 
+        'n_paragraph': n_paragraph, 
         'featured_image_url' : featured_image_url,
         'fact_table': str(html_table),
-        'hemisphere_image_urls': hems_image_urls
+        'hemsisphere_images': hems_img_urls
     }
 
+    browser.quit()
     return mars_dict
 
 
