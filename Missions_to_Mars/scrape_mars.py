@@ -42,50 +42,47 @@ def scrape():
     table_df = pd.read_html(facts_url)[1]
     html_table = table_df.to_html()
 
-    #Scrape hemisphere image and name
-    time.sleep(2)
-    hems_url = 'https://marshemispheres.com/'
-    browser.visit(hems_url)
-    hems_html = browser.html
-    hems_soup = bs(hems_html, 'html.parser')
+    # hemispheres
+    url = 'https://marshemispheres.com/'
+    browser.visit(url)
+    html = browser.html
+    soup = bs(html, 'html.parser')
 
-    all_hems= hems_soup.find('div', class_='collapsible results')
-    mars_hems = all_hems.find_all('div', class_='item')
-    hems_img_urls = []
+    mars_hems= soup.find('div', class_='collapsible results')
+    mars_item= mars_hems.find_all('div', class_='item')
+    hemisphere_image_urls = []
 
     #loop through hemispheres to get title and images
 
-    for i in mars_hems:
+    for item in mars_item:
         try: 
         
             ##title
-            hemisphere = i.find('div', class_='description')
+            hemisphere= item.find('div', class_='description')
             title = hemisphere.h3.text
     
             ##full res img
-            hems_img = hemisphere.a['href']
-            browser.visit(hems_url + hems_img)
+            hemisphere_url = hemisphere.a['href']
+            browser.visit(url + hemisphere_url)
 
-            img_html = browser.html
-            img_soup = bs(img_html, 'html.parser')
-    
-            img_link = img_soup.find('div', class_='downloads')
-            img_url = img_link.find('li').a['href']
-    
-            if (title and img_url):
+            html = browser.html
+            img_soup= bs(html, 'html.parser')
+            img_url = img_soup.find('li').a['href']
+            full_url = url + img_url
+            if (title and full_url):
 
                 #print results
                 print('-'*25)
                 print (title)
-                print(img_url)
+                print(full_url)
 
             # hemisphere dict
         
-            hems_dict = {
+            hemisphere_dict = {
                 'title': title, 
-                'image': img_url
+                'img_url': full_url
             }
-            hems_img_urls.append(hems_dict)
+            hemisphere_image_urls.append(hemisphere_dict)
         except Exception as e:
             print(e)
 
@@ -96,7 +93,7 @@ def scrape():
         'n_paragraph': n_paragraph, 
         'featured_image_url' : featured_image_url,
         'fact_table': str(html_table),
-        'hemsisphere_images': hems_img_urls
+        'hemisphere_images': hemisphere_image_urls
     }
 
     browser.quit()
